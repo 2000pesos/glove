@@ -1,3 +1,4 @@
+
 # Simple_MPU6050
 Using the Latest  InvenSense release DMP Firmware: Embedded MotionDriver 6.12 Preconfigured to do DMP Quaternion, Accel and Gyro usint the FIFO buffer
 
