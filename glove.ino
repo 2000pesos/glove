@@ -7,6 +7,13 @@
 
 Simple_MPU6050 mpu;
 ENABLE_MPU_OVERFLOW_PROTECTION();
+
+
+
+int pins [2] = { 3, 4 };
+
+int pinIndex = 0;
+
 /*             _________________________________________________________*/
 //               X Accel  Y Accel  Z Accel   X Gyro   Y Gyro   Z Gyro
 //#define OFFSETS  -5260,    6596,    7866,     -45,       5,      -9  // My Last offsets. 
@@ -74,13 +81,16 @@ int PrintAllValues(int16_t *gyro, int16_t *accel, int32_t *quat, uint16_t SpamDe
 //    Serial.printfloatx(F("Yaw")  , xyz[0], 9, 4, F(",   ")); //printfloatx is a Helper Macro that works with Serial.print that I created (See #define above)
 //    Serial.printfloatx(F("Pitch"), xyz[1], 9, 4, F(",   "));
 //    Serial.printfloatx(F("Roll") , xyz[2], 9, 4, F(",   "));
-    
+      Serial.print("=== MPU ");
+      Serial.print(pinIndex + 1);
+      Serial.print(" ===\n");
+
       Serial.printfloatx(F("ax")   , accel[0], 5, 0, F(",   "));
       Serial.printfloatx(F("ay")   , accel[1], 5, 0, F(",   "));
       Serial.printfloatx(F("az")   , accel[2], 5, 0, F(",   "));
-      Serial.printfloatx(F("gx")   , gyro[0],  5, 0, F(",   "));
-      Serial.printfloatx(F("gy")   , gyro[1],  5, 0, F(",   "));
-      Serial.printfloatx(F("gz")   , gyro[2],  5, 0, F("\n"));
+//      Serial.printfloatx(F("gx")   , gyro[0],  5, 0, F(",   "));
+//      Serial.printfloatx(F("gy")   , gyro[1],  5, 0, F(",   "));
+//      Serial.printfloatx(F("gz")   , gyro[2],  5, 0, F("\n"));
     
     Serial.println();
   }
@@ -173,6 +183,14 @@ void print_Values (int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *times
   // PrintValues(quat, Spam_Delay);
   // ChartValues(quat, Spam_Delay);
   PrintAllValues(gyro, accel, quat, Spam_Delay);
+  
+  digitalWrite(pins[pinIndex], LOW);
+  pinIndex++;
+  if(pinIndex == 2) {
+    pinIndex = 0;
+  }
+  digitalWrite(pins[pinIndex], HIGH);
+  
   // ChartAllValues(gyro, accel, quat, Spam_Delay);
   // PrintQuaternion(quat, Spam_Delay);
   // PrintEuler(quat, Spam_Delay);
@@ -183,6 +201,8 @@ void print_Values (int16_t *gyro, int16_t *accel, int32_t *quat, uint32_t *times
 //***************************************************************************************
 //******************                Setup and Loop                 **********************
 //***************************************************************************************
+
+
 void setup() {
   uint8_t val;
 
@@ -205,7 +225,7 @@ void setup() {
   Serial.println(F("Start:"));
 #ifdef OFFSETS
   Serial.println(F("Using Offsets"));
-  mpu.SetAddress(MPU6050_ADDRESS_AD0_LOW).load_DMP_Image(OFFSETS); // Does it all for you
+  mpu.SetAddress(MPU6050_ADDRESS_AD0_HIGH).load_DMP_Image(OFFSETS); // Does it all for you
 
 #else
   Serial.println(F(" Since no offsets are defined we aregoing to calibrate this specific MPU6050,\n"
@@ -215,7 +235,7 @@ void setup() {
   while (Serial.available() && Serial.read()); // empty buffer
   while (!Serial.available());                 // wait for data
   while (Serial.available() && Serial.read()); // empty buffer again
-  mpu.SetAddress(MPU6050_ADDRESS_AD0_LOW).CalibrateMPU().load_DMP_Image();// Does it all for you with Calibration
+  mpu.SetAddress(MPU6050_ADDRESS_AD0_HIGH).CalibrateMPU().load_DMP_Image();// Does it all for you with Calibration
 #endif
   detachInterrupt(0); // load_DMP_Image automatically handles attaching interrupt to pin 2 so lets remove it for our puropse of testing this code
   mpu.on_FIFO(print_Values); // this is where the function name goes that will be triggered when good data is retrieved from the MPU
